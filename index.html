@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0c0909">
+  <title>MAFIA</title>
+  <link id="-gd-engine-icon" rel="icon" type="image/png" href="mafia.icon.png" />
+<link rel="apple-touch-icon" href="mafia.apple-touch-icon.png"/>
+
+  <style>
+    * { box-sizing:border-box; }
+    html,body {width:100%;height:100%;margin:0;overflow:hidden;background:#0c0909;}
+    #canvas {position:fixed;inset:0;width:100%;height:100%;display:block;outline:0;}
+    #splash {position:fixed;inset:0;z-index:10;background:#0c0909 url('mafia_loading.png') no-repeat center center;background-size:contain;display:flex;align-items:flex-end;justify-content:center;padding:0 20px max(32px,env(safe-area-inset-bottom));transition:opacity .4s ease;}
+    #splash.hide {opacity:0;pointer-events:none;}
+    .bar-zone {width:min(82vw,500px);display:flex;flex-direction:column;align-items:center;gap:12px;direction:rtl;}
+    #progress-caption {color:#e7c17b;font:600 14px/1.4 Arial,Tahoma,sans-serif;text-align:center;text-shadow:0 2px 5px #000;}
+    .bar {width:100%;height:8px;border:1px solid #76522d;border-radius:20px;background:rgba(10,6,6,.85);overflow:hidden;box-shadow:0 0 18px rgba(0,0,0,.8);}
+    #progress {width:0%;height:100%;background:linear-gradient(90deg,#7e080d,#e22424,#f4b75b);transition:width .18s ease;}
+    #error {display:none;position:absolute;left:20px;right:20px;top:20px;color:#fff;background:rgba(65,0,0,.93);padding:15px;border-radius:8px;text-align:center;font:16px/1.6 Arial,Tahoma,sans-serif;direction:rtl;}
+  </style>
+</head>
+<body>
+  <canvas id="canvas">المتصفح لا يدعم Canvas.</canvas>
+  <div id="splash" aria-live="polite">
+    <div id="error"></div>
+    <div class="bar-zone">
+      <div id="progress-caption">جاري تجهيز لعبة المافيا...</div>
+      <div class="bar"><div id="progress"></div></div>
+    </div>
+  </div>
+  <script src="mafia.js"></script>
+  <script>
+    'use strict';
+    const splash = document.getElementById('splash');
+    const fill = document.getElementById('progress');
+    const caption = document.getElementById('progress-caption');
+    const errorBox = document.getElementById('error');
+    const engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"mafia","experimentalVK":false,"fileSizes":{"mafia.pck":252985164,"mafia.wasm":1509558},"focusCanvas":true,"gdextensionLibs":["libterrain.web.debug.wasm32.wasm"],"godotPoolSize":4});
+    engine.startGame({
+      canvas: document.getElementById('canvas'),
+      onProgress(current, total) {
+        if (total > 0) {
+          const pct = Math.max(0, Math.min(100, Math.round(current / total * 100)));
+          fill.style.width = pct + '%';
+          caption.textContent = 'جاري تحميل المافيا... ' + pct + '%';
+        } else {
+          caption.textContent = 'جاري تجهيز لعبة المافيا...';
+        }
+      }
+    }).then(() => {
+      fill.style.width = '100%';
+      splash.classList.add('hide');
+      window.setTimeout(() => splash.remove(), 450);
+    }).catch((error) => {
+      console.error('MAFIA web start failed:', error);
+      caption.textContent = 'تعذّر تشغيل اللعبة';
+      errorBox.style.display = 'block';
+      errorBox.textContent = 'خطأ في تحميل اللعبة. اضغط F12 وافتح Console لمعرفة السبب.';
+    });
+  </script>
+</body>
+</html>
+
